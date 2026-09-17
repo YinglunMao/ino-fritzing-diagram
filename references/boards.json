@@ -1,0 +1,1005 @@
+{
+  "version": 1,
+  "about": "开发板目录。新增板卡只需在此文件加一条，无需改动任何代码。",
+  "schema": {
+    "id": "唯一 id，也是 build_parts/build_wiring 里 part 字段的取值",
+    "name": "显示名",
+    "fqbn": "arduino-cli 的 FQBN（用于自动匹配）",
+    "variants": "核心包 variants/ 目录名（用于经 pins_arduino.h 反查匹配）",
+    "match": "额外的模糊匹配关键词（小写）",
+    "hand_tuned": "若填写，则改用 parts_library.py 里同名的手工精修渲染器（按实拍照片校准过）",
+    "size_mm": "[宽, 高]，单位毫米",
+    "pcb": "板体配色 {fill, edge, corner_r}",
+    "silk": "丝印颜色",
+    "holes": "安装孔 [[x, y, r], ...]（相对板子左上角，毫米）",
+    "connectors": "排针：side=top/bottom/left/right；top/bottom 用 at+y，left/right 用 at+x",
+    "gpio": "丝印名 -> GPIO 号（用于生成「丝印 · GPIOx」双标注）",
+    "decor": "装饰件（芯片/USB/按键/指示灯/文字），只为外观，不产生引脚",
+    "source": "引脚数据来源，可溯源"
+  },
+  "boards": [
+    {
+      "id": "arduino_uno",
+      "name": "Arduino Uno R3",
+      "fqbn": "arduino:avr:uno",
+      "variants": [
+        "standard"
+      ],
+      "match": [
+        "arduino:avr:uno",
+        "uno",
+        "uno r3",
+        "arduino uno"
+      ],
+      "size_mm": [
+        68.6,
+        53.4
+      ],
+      "pcb": {
+        "fill": "#0C7C86",
+        "edge": "#075A62",
+        "corner_r": 1.8
+      },
+      "silk": "#FFFFFF",
+      "holes": [
+        [
+          2.6,
+          2.6,
+          1.2
+        ],
+        [
+          2.6,
+          50.8,
+          1.2
+        ],
+        [
+          66.0,
+          6.8,
+          1.2
+        ],
+        [
+          66.0,
+          46.6,
+          1.2
+        ]
+      ],
+      "connectors": [
+        {
+          "side": "top",
+          "at": 17.8,
+          "y": 3.8,
+          "pitch": 2.54,
+          "dir": "up",
+          "label_size": 0.95,
+          "pins": [
+            "NC",
+            "IOREF",
+            "RESET",
+            "3V3",
+            "5V",
+            "GND",
+            "GND",
+            "VIN"
+          ],
+          "hide_pins": [
+            "NC"
+          ],
+          "note": "POWER 排针（官方 UNO R3 J1，首位保留不接）"
+        },
+        {
+          "side": "top",
+          "at": 43.2,
+          "y": 3.8,
+          "pitch": 2.54,
+          "dir": "up",
+          "label_size": 0.95,
+          "pins": [
+            "SCL",
+            "SDA",
+            "AREF",
+            "GND",
+            "13",
+            "12",
+            "11",
+            "10",
+            "9",
+            "8"
+          ],
+          "note": "数字高 8 位 + R3 新增 SCL/SDA/AREF"
+        },
+        {
+          "side": "bottom",
+          "at": 27.9,
+          "y": 49.6,
+          "pitch": 2.54,
+          "dir": "down",
+          "label_size": 0.95,
+          "pins": [
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5"
+          ],
+          "note": "ANALOG IN"
+        },
+        {
+          "side": "bottom",
+          "at": 45.7,
+          "y": 49.6,
+          "pitch": 2.54,
+          "dir": "down",
+          "label_size": 0.95,
+          "pins": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7"
+          ],
+          "note": "DIGITAL 低 8 位（0=RX, 1=TX）"
+        }
+      ],
+      "gpio": {
+        "0": 0,
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6,
+        "7": 7,
+        "8": 8,
+        "9": 9,
+        "10": 10,
+        "11": 11,
+        "12": 12,
+        "13": 13,
+        "A0": 14,
+        "A1": 15,
+        "A2": 16,
+        "A3": 17,
+        "A4": 18,
+        "A5": 19,
+        "SDA": 18,
+        "SCL": 19
+      },
+      "decor": [
+        {
+          "type": "usb",
+          "kind": "b",
+          "x": 0.6,
+          "y": 12.6,
+          "w": 16.5,
+          "h": 13.6
+        },
+        {
+          "type": "barrel",
+          "x": 0.6,
+          "y": 32.0,
+          "w": 14.0,
+          "h": 13.0
+        },
+        {
+          "type": "button",
+          "x": 20.4,
+          "y": 10.0,
+          "label": "RESET"
+        },
+        {
+          "type": "chip",
+          "x": 23.0,
+          "y": 33.4,
+          "w": 34.7,
+          "h": 8.2,
+          "legs": 14,
+          "label": "ATmega328P"
+        },
+        {
+          "type": "crystal",
+          "x": 19.0,
+          "y": 24.0,
+          "w": 7.0,
+          "h": 4.6
+        },
+        {
+          "type": "chip",
+          "x": 58.0,
+          "y": 24.0,
+          "w": 5.0,
+          "h": 5.0,
+          "legs": 4,
+          "label": ""
+        },
+        {
+          "type": "led",
+          "x": 57.0,
+          "y": 11.6,
+          "color": "#E8B84B",
+          "silk": "L"
+        },
+        {
+          "type": "led",
+          "x": 57.0,
+          "y": 15.4,
+          "color": "#33C24A",
+          "silk": "ON"
+        },
+        {
+          "type": "led",
+          "x": 61.4,
+          "y": 11.6,
+          "color": "#E23B2E",
+          "silk": "TX"
+        },
+        {
+          "type": "led",
+          "x": 61.4,
+          "y": 15.4,
+          "color": "#E8B84B",
+          "silk": "RX"
+        },
+        {
+          "type": "text",
+          "x": 34.3,
+          "y": 47.4,
+          "s": "Arduino Uno R3",
+          "size": 3.0
+        },
+        {
+          "type": "text",
+          "x": 34.3,
+          "y": 22.0,
+          "s": "UNO",
+          "size": 5.0,
+          "opacity": 0.9
+        }
+      ],
+      "source": "https://docs.arduino.cc/hardware/uno-rev3 —— 排针分组与针序按官方 UNO R3 原理图 J1/J2/J3 与引脚图"
+    },
+    {
+      "id": "arduino_nano",
+      "name": "Arduino Nano",
+      "fqbn": "arduino:avr:nano",
+      "variants": [
+        "eightanaloginputs"
+      ],
+      "match": [
+        "arduino:avr:nano",
+        "nano",
+        "arduino nano",
+        "nano v3"
+      ],
+      "size_mm": [
+        45.0,
+        17.8
+      ],
+      "pcb": {
+        "fill": "#0B6E7F",
+        "edge": "#07505C",
+        "corner_r": 1.2
+      },
+      "silk": "#FFFFFF",
+      "holes": [
+        [
+          2.2,
+          8.9,
+          1.0
+        ],
+        [
+          42.8,
+          8.9,
+          1.0
+        ]
+      ],
+      "connectors": [
+        {
+          "side": "top",
+          "at": 3.6,
+          "y": 2.2,
+          "pitch": 2.54,
+          "dir": "up",
+          "label_size": 0.9,
+          "pins": [
+            "D13",
+            "3V3",
+            "AREF",
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5",
+            "A6",
+            "A7",
+            "5V",
+            "RST",
+            "GND",
+            "VIN"
+          ],
+          "note": "上排 15 针（D13 → VIN）"
+        },
+        {
+          "side": "bottom",
+          "at": 3.6,
+          "y": 15.6,
+          "pitch": 2.54,
+          "dir": "down",
+          "label_size": 0.9,
+          "pins": [
+            "D12",
+            "D11",
+            "D10",
+            "D9",
+            "D8",
+            "D7",
+            "D6",
+            "D5",
+            "D4",
+            "D3",
+            "D2",
+            "GND",
+            "RST",
+            "RX0",
+            "TX1"
+          ],
+          "note": "下排 15 针（D12 → TX1）"
+        }
+      ],
+      "gpio": {
+        "D0": 0,
+        "D1": 1,
+        "D2": 2,
+        "D3": 3,
+        "D4": 4,
+        "D5": 5,
+        "D6": 6,
+        "D7": 7,
+        "D8": 8,
+        "D9": 9,
+        "D10": 10,
+        "D11": 11,
+        "D12": 12,
+        "D13": 13,
+        "A0": 14,
+        "A1": 15,
+        "A2": 16,
+        "A3": 17,
+        "A4": 18,
+        "A5": 19,
+        "A6": 20,
+        "A7": 21,
+        "RX0": 0,
+        "TX1": 1,
+        "SDA": 18,
+        "SCL": 19
+      },
+      "decor": [
+        {
+          "type": "usb",
+          "kind": "micro",
+          "x": 0.5,
+          "y": 5.6,
+          "w": 6.6,
+          "h": 6.6
+        },
+        {
+          "type": "chip",
+          "x": 17.0,
+          "y": 5.4,
+          "w": 7.0,
+          "h": 7.0,
+          "legs": 8,
+          "label": ""
+        },
+        {
+          "type": "crystal",
+          "x": 27.0,
+          "y": 6.6,
+          "w": 5.2,
+          "h": 3.4
+        },
+        {
+          "type": "button",
+          "x": 35.0,
+          "y": 6.4,
+          "label": "RST"
+        },
+        {
+          "type": "led",
+          "x": 39.6,
+          "y": 4.6,
+          "color": "#E8B84B",
+          "silk": "L"
+        },
+        {
+          "type": "led",
+          "x": 39.6,
+          "y": 12.4,
+          "color": "#E23B2E",
+          "silk": "TX"
+        },
+        {
+          "type": "text",
+          "x": 22.5,
+          "y": 10.6,
+          "s": "Arduino Nano",
+          "size": 2.0
+        }
+      ],
+      "source": "https://docs.arduino.cc/hardware/nano —— 两排 15 针针序按官方 Nano 引脚图（USB 端在左）"
+    },
+    {
+      "id": "esp32_devkitc",
+      "name": "ESP32 DevKitC v4",
+      "fqbn": "esp32:esp32:esp32",
+      "variants": [
+        "esp32",
+        "doitESP32devkitV1"
+      ],
+      "match": [
+        "esp32:esp32:esp32",
+        "devkitc",
+        "devkit v4",
+        "esp32 devkit",
+        "esp32dev",
+        "wroom"
+      ],
+      "size_mm": [
+        25.4,
+        52.4
+      ],
+      "pcb": {
+        "fill": "#141618",
+        "edge": "#07080A",
+        "corner_r": 1.4
+      },
+      "silk": "#E4E7EA",
+      "holes": [
+        [
+          2.4,
+          1.5,
+          0.8
+        ],
+        [
+          23.0,
+          1.5,
+          0.8
+        ],
+        [
+          2.4,
+          51.5,
+          0.8
+        ],
+        [
+          23.0,
+          51.5,
+          0.8
+        ]
+      ],
+      "connectors": [
+        {
+          "side": "left",
+          "at": 3.6,
+          "x": 2.4,
+          "pitch": 2.54,
+          "dir": "left",
+          "label_size": 0.68,
+          "pins": [
+            "3V3",
+            "EN",
+            "VP",
+            "VN",
+            "IO34",
+            "IO35",
+            "IO32",
+            "IO33",
+            "IO25",
+            "IO26",
+            "IO27",
+            "IO14",
+            "IO12",
+            "GND",
+            "IO13",
+            "D2",
+            "D3",
+            "CMD",
+            "5V"
+          ],
+          "note": "官方 J2（左 19 针）"
+        },
+        {
+          "side": "right",
+          "at": 3.6,
+          "x": 23.0,
+          "pitch": 2.54,
+          "dir": "right",
+          "label_size": 0.68,
+          "pins": [
+            "GND",
+            "IO23",
+            "IO22",
+            "TX",
+            "RX",
+            "IO21",
+            "GND",
+            "IO19",
+            "IO18",
+            "IO5",
+            "IO17",
+            "IO16",
+            "IO4",
+            "IO0",
+            "IO2",
+            "IO15",
+            "D1",
+            "D0",
+            "CLK"
+          ],
+          "note": "官方 J3（右 19 针）"
+        }
+      ],
+      "gpio": {
+        "VP": 36,
+        "VN": 39,
+        "IO34": 34,
+        "IO35": 35,
+        "IO32": 32,
+        "IO33": 33,
+        "IO25": 25,
+        "IO26": 26,
+        "IO27": 27,
+        "IO14": 14,
+        "IO12": 12,
+        "IO13": 13,
+        "IO23": 23,
+        "IO22": 22,
+        "IO21": 21,
+        "IO19": 19,
+        "IO18": 18,
+        "IO5": 5,
+        "IO17": 17,
+        "IO16": 16,
+        "IO4": 4,
+        "IO0": 0,
+        "IO2": 2,
+        "IO15": 15,
+        "TX": 1,
+        "RX": 3,
+        "D0": 7,
+        "D1": 8,
+        "D2": 9,
+        "D3": 10,
+        "CMD": 11,
+        "CLK": 6
+      },
+      "decor": [
+        {
+          "type": "shield",
+          "x": 3.4,
+          "y": 4.4,
+          "w": 18.6,
+          "h": 25.0
+        },
+        {
+          "type": "usb",
+          "kind": "micro",
+          "x": 9.4,
+          "y": 46.6,
+          "w": 6.6,
+          "h": 5.4
+        },
+        {
+          "type": "button",
+          "x": 5.6,
+          "y": 41.6,
+          "label": "EN"
+        },
+        {
+          "type": "button",
+          "x": 19.8,
+          "y": 41.6,
+          "label": "BOOT"
+        },
+        {
+          "type": "led",
+          "x": 12.0,
+          "y": 37.4,
+          "color": "#E23B2E",
+          "silk": "PWR"
+        },
+        {
+          "type": "text",
+          "x": 12.7,
+          "y": 44.6,
+          "s": "ESP32-DevKitC",
+          "size": 1.5
+        }
+      ],
+      "source": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32/esp32-devkitc/user_guide.html —— J2/J3 针序与名称逐条照录官方 Header Block 表"
+    },
+    {
+      "id": "esp8266_nodemcu",
+      "name": "NodeMCU v3 (ESP8266 LoLin)",
+      "fqbn": "esp8266:esp8266:nodemcuv2",
+      "variants": [
+        "nodemcu"
+      ],
+      "match": [
+        "esp8266:esp8266:nodemcuv2",
+        "nodemcu",
+        "nodemcu v3",
+        "lolin",
+        "esp8266"
+      ],
+      "size_mm": [
+        25.4,
+        48.0
+      ],
+      "pcb": {
+        "fill": "#141618",
+        "edge": "#07080A",
+        "corner_r": 1.4
+      },
+      "silk": "#E4E7EA",
+      "holes": [
+        [
+          2.4,
+          2.4,
+          0.9
+        ],
+        [
+          23.0,
+          2.4,
+          0.9
+        ],
+        [
+          2.4,
+          45.6,
+          0.9
+        ],
+        [
+          23.0,
+          45.6,
+          0.9
+        ]
+      ],
+      "connectors": [
+        {
+          "side": "left",
+          "at": 6.2,
+          "x": 2.4,
+          "pitch": 2.54,
+          "dir": "left",
+          "label_size": 0.72,
+          "pins": [
+            "A0",
+            "GND",
+            "VU",
+            "SD3",
+            "SD2",
+            "SD1",
+            "CMD",
+            "SD0",
+            "CLK",
+            "GND2",
+            "3V3",
+            "EN",
+            "RST",
+            "GND3",
+            "VIN"
+          ],
+          "note": "左 15 针（A0 → VIN）"
+        },
+        {
+          "side": "right",
+          "at": 6.2,
+          "x": 23.0,
+          "pitch": 2.54,
+          "dir": "right",
+          "label_size": 0.72,
+          "pins": [
+            "D0",
+            "D1",
+            "D2",
+            "D3",
+            "D4",
+            "3V3B",
+            "GND4",
+            "D5",
+            "D6",
+            "D7",
+            "D8",
+            "RX",
+            "TX",
+            "GND5",
+            "3V3C"
+          ],
+          "note": "右 15 针（D0 → 3V3）"
+        }
+      ],
+      "gpio": {
+        "D0": 16,
+        "D1": 5,
+        "D2": 4,
+        "D3": 0,
+        "D4": 2,
+        "D5": 14,
+        "D6": 12,
+        "D7": 13,
+        "D8": 15,
+        "RX": 3,
+        "TX": 1,
+        "SD3": 10,
+        "SD2": 9,
+        "SD1": 8,
+        "CMD": 11,
+        "SD0": 7,
+        "CLK": 6,
+        "A0": 17
+      },
+      "decor": [
+        {
+          "type": "shield",
+          "x": 6.2,
+          "y": 5.2,
+          "w": 13.0,
+          "h": 16.0
+        },
+        {
+          "type": "chip",
+          "x": 8.0,
+          "y": 28.4,
+          "w": 9.4,
+          "h": 5.4,
+          "legs": 5,
+          "label": ""
+        },
+        {
+          "type": "usb",
+          "kind": "micro",
+          "x": 9.4,
+          "y": 42.8,
+          "w": 6.6,
+          "h": 5.0
+        },
+        {
+          "type": "button",
+          "x": 5.8,
+          "y": 24.0,
+          "label": "FLASH"
+        },
+        {
+          "type": "button",
+          "x": 19.4,
+          "y": 24.0,
+          "label": "RST"
+        },
+        {
+          "type": "text",
+          "x": 12.7,
+          "y": 40.2,
+          "s": "NodeMCU v3",
+          "size": 1.5
+        }
+      ],
+      "source": "NodeMCU v3 (LoLin) 官方丝印布局 —— 左 A0/GND/VU/SD3..CLK/GND/3V3/EN/RST/GND/VIN；右 D0..D8/RX/TX/GND/3V3"
+    },
+    {
+      "id": "rp_pico",
+      "name": "Raspberry Pi Pico (RP2040)",
+      "fqbn": "rp2040:rp2040:rpipico",
+      "variants": [
+        "rpipico"
+      ],
+      "match": [
+        "rp2040:rp2040:rpipico",
+        "pico",
+        "rpipico",
+        "raspberry pi pico"
+      ],
+      "size_mm": [
+        21.0,
+        51.0
+      ],
+      "pcb": {
+        "fill": "#136B33",
+        "edge": "#0B4A22",
+        "corner_r": 1.0
+      },
+      "silk": "#FFFFFF",
+      "holes": [],
+      "connectors": [
+        {
+          "side": "left",
+          "at": 1.6,
+          "x": 1.6,
+          "pitch": 2.54,
+          "dir": "left",
+          "label_size": 0.62,
+          "pins": [
+            "GP0",
+            "GP1",
+            "GND",
+            "GP2",
+            "GP3",
+            "GP4",
+            "GP5",
+            "GND2",
+            "GP6",
+            "GP7",
+            "GP8",
+            "GP9",
+            "GND3",
+            "GP10",
+            "GP11",
+            "GP12",
+            "GP13",
+            "GND4",
+            "GP14",
+            "GP15"
+          ],
+          "note": "物理 1-20 针（USB 在顶端）"
+        },
+        {
+          "side": "right",
+          "at": 1.6,
+          "x": 19.4,
+          "pitch": 2.54,
+          "dir": "right",
+          "label_size": 0.62,
+          "pins": [
+            "VBUS",
+            "VSYS",
+            "GND5",
+            "3V3_EN",
+            "3V3",
+            "ADC_VREF",
+            "GP28",
+            "AGND",
+            "GP27",
+            "GP26",
+            "RUN",
+            "GP22",
+            "GND6",
+            "GP21",
+            "GP20",
+            "GP19",
+            "GP18",
+            "GND7",
+            "GP17",
+            "GP16"
+          ],
+          "note": "物理 21-40 针（自下向上，此处按自上向下排列）"
+        }
+      ],
+      "gpio": {
+        "GP0": 0,
+        "GP1": 1,
+        "GP2": 2,
+        "GP3": 3,
+        "GP4": 4,
+        "GP5": 5,
+        "GP6": 6,
+        "GP7": 7,
+        "GP8": 8,
+        "GP9": 9,
+        "GP10": 10,
+        "GP11": 11,
+        "GP12": 12,
+        "GP13": 13,
+        "GP14": 14,
+        "GP15": 15,
+        "GP16": 16,
+        "GP17": 17,
+        "GP18": 18,
+        "GP19": 19,
+        "GP20": 20,
+        "GP21": 21,
+        "GP22": 22,
+        "GP26": 26,
+        "GP27": 27,
+        "GP28": 28
+      },
+      "decor": [
+        {
+          "type": "usb",
+          "kind": "micro",
+          "x": 7.2,
+          "y": 0.4,
+          "w": 6.6,
+          "h": 4.6
+        },
+        {
+          "type": "chip",
+          "x": 5.2,
+          "y": 19.6,
+          "w": 10.6,
+          "h": 10.6,
+          "legs": 9,
+          "label": "RP2040"
+        },
+        {
+          "type": "chip",
+          "x": 6.4,
+          "y": 12.6,
+          "w": 8.2,
+          "h": 5.0,
+          "legs": 4,
+          "label": ""
+        },
+        {
+          "type": "button",
+          "x": 10.5,
+          "y": 6.6,
+          "label": "BOOTSEL"
+        },
+        {
+          "type": "led",
+          "x": 9.6,
+          "y": 33.0,
+          "color": "#33C24A",
+          "silk": "LED"
+        },
+        {
+          "type": "text",
+          "x": 10.5,
+          "y": 43.0,
+          "s": "Raspberry Pi",
+          "size": 1.5,
+          "rot": -90
+        },
+        {
+          "type": "text",
+          "x": 12.6,
+          "y": 43.0,
+          "s": "Pico",
+          "size": 2.0,
+          "rot": -90
+        }
+      ],
+      "source": "https://pico.pinout.xyz/ + https://datasheets.raspberrypi.com/pico/pico-datasheet.pdf —— 物理针位 1-40 与 Pico 官方 pinout 一致；PCB 为绿色（官方规格）"
+    },
+    {
+      "id": "esp32s3_nano_white",
+      "name": "ESP32-S3 Nano（白色 PCB）",
+      "hand_tuned": "esp32s3_nano_white",
+      "fqbn": null,
+      "variants": [
+        "esp32s3"
+      ],
+      "match": [
+        "esp32s3_nano_white",
+        "esp32-s3 nano",
+        "白板 esp32s3"
+      ],
+      "size_mm": [
+        52.8,
+        20.5
+      ],
+      "source": "实拍照片识别（白 PCB、黑丝印、BOOT/RST、PWR+G48 指示灯、短边 USB、丝印直接印 GPIO 号）"
+    },
+    {
+      "id": "geekble_nano_esp32s3",
+      "name": "Geekble nano ESP32-S3",
+      "hand_tuned": "geekble_nano_esp32s3",
+      "fqbn": "esp32:esp32:Geekble_Nano_ESP32S3",
+      "variants": [
+        "Geekble_Nano_ESP32S3"
+      ],
+      "match": [
+        "geekble",
+        "geekble nano esp32-s3"
+      ],
+      "size_mm": [
+        43.2,
+        17.8
+      ],
+      "source": "Geekble 官方 PinMap（Geekble-nano-ESP32S3 仓库）—— 注意本板 USB 描述符会写死板名，识别时不可只信 arduino-cli"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 运行时产物（生成在 sketch 目录下，不属于本仓库）
+photo_probe/
+fritzing/
+
+# 编辑器
+.vscode/
+.idea/
+*.swp

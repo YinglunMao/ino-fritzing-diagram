@@ -1,0 +1,1192 @@
+{
+  "_comment": "元件识别字典：patterns 命中 ino 全文（含注释）即判定使用；query 用于 CDP+Bing 找外观参考图；part_id 指向 parts_library.py 中已收录的绘制器（可为空=需要现场绘制）。",
+  "components": [
+    {
+      "key": "as7341",
+      "names": [
+        "AS7341",
+        "AS 7341",
+        "11 通道光谱传感器",
+        "多光谱传感器"
+      ],
+      "patterns": [
+        "\\bAS7341\\b",
+        "\\bas7341_"
+      ],
+      "query": "AS7341 spectral color sensor module breakout board",
+      "kind": "sensor",
+      "bus": "i2c",
+      "i2c": [
+        "0x39"
+      ],
+      "part_id": "as7341_module",
+      "pins": [
+        "VCC",
+        "GND",
+        "SDA",
+        "SCL",
+        "INT"
+      ],
+      "note": "11 通道多光谱/色彩传感器，默认 I2C 地址 0x39"
+    },
+    {
+      "key": "mpu6050",
+      "names": [
+        "MPU6050",
+        "MPU-6050",
+        "六轴加速度陀螺仪"
+      ],
+      "patterns": [
+        "\\bMPU[-_]?6050\\b",
+        "Adafruit_MPU6050"
+      ],
+      "query": "MPU6050 GY-521 module",
+      "kind": "sensor",
+      "bus": "i2c",
+      "i2c": [
+        "0x68",
+        "0x69"
+      ],
+      "part_id": "mpu6050_gy521",
+      "pins": [
+        "VCC",
+        "GND",
+        "SCL",
+        "SDA",
+        "XDA",
+        "XCL",
+        "AD0",
+        "INT"
+      ],
+      "note": "六轴 IMU；AD0 接地为 0x68，接 VCC 为 0x69"
+    },
+    {
+      "key": "mpu9250",
+      "names": [
+        "MPU9250",
+        "MPU-9250"
+      ],
+      "patterns": [
+        "\\bMPU[-_]?9250\\b"
+      ],
+      "query": "MPU9250 module breakout",
+      "kind": "sensor",
+      "bus": "i2c",
+      "i2c": [
+        "0x68"
+      ],
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "SCL",
+        "SDA",
+        "XDA",
+        "XCL",
+        "AD0",
+        "INT"
+      ]
+    },
+    {
+      "key": "pulse_sensor",
+      "names": [
+        "Pulse Sensor",
+        "脉搏传感器",
+        "心率传感器"
+      ],
+      "patterns": [
+        "Pulse\\s*Sensor",
+        "脉搏",
+        "pulseSensor",
+        "\\bPulseSensor\\b"
+      ],
+      "query": "Pulse Sensor Amped heart rate sensor Arduino",
+      "kind": "sensor",
+      "bus": "analog",
+      "part_id": "pulse_sensor",
+      "pins": [
+        "VCC",
+        "GND",
+        "SIG"
+      ],
+      "note": "模拟输出光电脉搏模块",
+      "generic_patterns": []
+    },
+    {
+      "key": "max9814",
+      "names": [
+        "MAX9814"
+      ],
+      "patterns": [
+        "\\bMAX9814\\b"
+      ],
+      "query": "MAX9814 microphone amplifier module",
+      "kind": "sensor",
+      "bus": "analog",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "OUT",
+        "GAIN"
+      ]
+    },
+    {
+      "key": "max4466",
+      "names": [
+        "MAX4466"
+      ],
+      "patterns": [
+        "\\bMAX4466\\b"
+      ],
+      "query": "MAX4466 microphone amplifier module",
+      "kind": "sensor",
+      "bus": "analog",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "OUT"
+      ]
+    },
+    {
+      "key": "lm2904_mic",
+      "names": [
+        "声音/麦克风模块（咪头）",
+        "LM2904",
+        "咪头模块",
+        "声音传感器模块",
+        "麦克风模块"
+      ],
+      "patterns": [
+        "\\bLM2904\\b",
+        "咪头",
+        "声音传感器",
+        "麦克风模块",
+        "microphone"
+      ],
+      "query": "LM2904 microphone sound sensor module Arduino",
+      "kind": "sensor",
+      "bus": "analog",
+      "part_id": "mic_lm2904_module",
+      "pins": [
+        "VCC",
+        "GND",
+        "DO",
+        "AO"
+      ],
+      "note": "LM2904 双运放声音模块（FC-04）",
+      "generic_patterns": [
+        "咪头",
+        "声音传感器",
+        "麦克风模块",
+        "microphone"
+      ]
+    },
+    {
+      "key": "bme280",
+      "names": [
+        "BME280"
+      ],
+      "patterns": [
+        "\\bBME280\\b"
+      ],
+      "query": "BME280 module breakout",
+      "kind": "sensor",
+      "bus": "i2c",
+      "i2c": [
+        "0x76",
+        "0x77"
+      ],
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "SCL",
+        "SDA"
+      ]
+    },
+    {
+      "key": "bmp280",
+      "names": [
+        "BMP280"
+      ],
+      "patterns": [
+        "\\bBMP280\\b"
+      ],
+      "query": "BMP280 module breakout",
+      "kind": "sensor",
+      "bus": "i2c",
+      "i2c": [
+        "0x76",
+        "0x77"
+      ],
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "SCL",
+        "SDA"
+      ]
+    },
+    {
+      "key": "dht",
+      "names": [
+        "DHT11",
+        "DHT22",
+        "AM2302"
+      ],
+      "patterns": [
+        "\\bDHT(11|22)\\b",
+        "\\bAM2302\\b"
+      ],
+      "query": "DHT22 AM2302 temperature humidity module",
+      "kind": "sensor",
+      "bus": "digital",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "DATA"
+      ]
+    },
+    {
+      "key": "sht31",
+      "names": [
+        "SHT31",
+        "SHT30"
+      ],
+      "patterns": [
+        "\\bSHT3[01]\\b"
+      ],
+      "query": "SHT31 temperature humidity module",
+      "kind": "sensor",
+      "bus": "i2c",
+      "i2c": [
+        "0x44",
+        "0x45"
+      ],
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "SCL",
+        "SDA"
+      ]
+    },
+    {
+      "key": "vl53l0x",
+      "names": [
+        "VL53L0X",
+        "VL53L1X",
+        "激光测距"
+      ],
+      "patterns": [
+        "\\bVL53L[01]X\\b"
+      ],
+      "query": "VL53L0X time of flight distance sensor module",
+      "kind": "sensor",
+      "bus": "i2c",
+      "i2c": [
+        "0x29"
+      ],
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "SCL",
+        "SDA"
+      ]
+    },
+    {
+      "key": "tcs34725",
+      "names": [
+        "TCS34725",
+        "颜色传感器"
+      ],
+      "patterns": [
+        "\\bTCS34725\\b"
+      ],
+      "query": "TCS34725 color sensor module",
+      "kind": "sensor",
+      "bus": "i2c",
+      "i2c": [
+        "0x29"
+      ],
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "SCL",
+        "SDA"
+      ]
+    },
+    {
+      "key": "bh1750",
+      "names": [
+        "BH1750",
+        "光照传感器"
+      ],
+      "patterns": [
+        "\\bBH1750\\b"
+      ],
+      "query": "BH1750 light sensor module GY-302",
+      "kind": "sensor",
+      "bus": "i2c",
+      "i2c": [
+        "0x23",
+        "0x5C"
+      ],
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "SCL",
+        "SDA"
+      ]
+    },
+    {
+      "key": "ldr",
+      "names": [
+        "光敏电阻",
+        "LDR",
+        "光敏"
+      ],
+      "patterns": [
+        "光敏",
+        "\\bLDR\\b",
+        "photoresistor"
+      ],
+      "query": "photoresistor LDR light sensor module",
+      "kind": "sensor",
+      "bus": "analog",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "AO"
+      ]
+    },
+    {
+      "key": "sound_ky038",
+      "names": [
+        "KY-038",
+        "声音检测"
+      ],
+      "patterns": [
+        "KY-?038",
+        "声音检测"
+      ],
+      "query": "KY-038 sound sensor module",
+      "kind": "sensor",
+      "bus": "analog",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "DO",
+        "AO"
+      ],
+      "generic_patterns": [
+        "声音检测"
+      ]
+    },
+    {
+      "key": "hc_sr04",
+      "names": [
+        "HC-SR04",
+        "超声波"
+      ],
+      "patterns": [
+        "HC-?SR04",
+        "超声波"
+      ],
+      "query": "HC-SR04 ultrasonic sensor module",
+      "kind": "sensor",
+      "bus": "digital",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "TRIG",
+        "ECHO"
+      ]
+    },
+    {
+      "key": "pir",
+      "names": [
+        "HC-SR501",
+        "PIR",
+        "人体红外"
+      ],
+      "patterns": [
+        "HC-?SR501",
+        "\\bPIR\\b",
+        "人体红外"
+      ],
+      "query": "HC-SR501 PIR motion sensor module",
+      "kind": "sensor",
+      "bus": "digital",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "OUT"
+      ]
+    },
+    {
+      "key": "mq_gas",
+      "names": [
+        "MQ-2",
+        "MQ-135",
+        "MQ-3",
+        "MQ-7",
+        "气体传感器"
+      ],
+      "patterns": [
+        "\\bMQ-?\\d{1,3}\\b",
+        "气体传感器"
+      ],
+      "query": "MQ-135 gas sensor module",
+      "kind": "sensor",
+      "bus": "analog",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "AO",
+        "DO"
+      ]
+    },
+    {
+      "key": "soil_moisture",
+      "names": [
+        "土壤湿度",
+        "soil moisture"
+      ],
+      "patterns": [
+        "土壤湿度",
+        "soil.?moisture"
+      ],
+      "query": "soil moisture sensor module Arduino",
+      "kind": "sensor",
+      "bus": "analog",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "AO",
+        "DO"
+      ]
+    },
+    {
+      "key": "water_level",
+      "names": [
+        "水位传感器",
+        "water level"
+      ],
+      "patterns": [
+        "水位",
+        "water.?level"
+      ],
+      "query": "water level sensor module Arduino",
+      "kind": "sensor",
+      "bus": "analog",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "S"
+      ]
+    },
+    {
+      "key": "rain",
+      "names": [
+        "雨滴传感器",
+        "rain sensor"
+      ],
+      "patterns": [
+        "雨滴",
+        "rain.?sensor"
+      ],
+      "query": "rain drop sensor module Arduino",
+      "kind": "sensor",
+      "bus": "analog",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "AO",
+        "DO"
+      ]
+    },
+    {
+      "key": "flame",
+      "names": [
+        "火焰传感器",
+        "flame sensor"
+      ],
+      "patterns": [
+        "火焰",
+        "flame.?sensor"
+      ],
+      "query": "flame sensor module Arduino",
+      "kind": "sensor",
+      "bus": "analog",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "AO",
+        "DO"
+      ]
+    },
+    {
+      "key": "tcrt5000",
+      "names": [
+        "TCRT5000",
+        "循迹传感器"
+      ],
+      "patterns": [
+        "TCRT5000",
+        "循迹"
+      ],
+      "query": "TCRT5000 reflective optical sensor module",
+      "kind": "sensor",
+      "bus": "digital",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "DO",
+        "AO"
+      ]
+    },
+    {
+      "key": "ttp223",
+      "names": [
+        "TTP223",
+        "触摸开关"
+      ],
+      "patterns": [
+        "TTP223",
+        "触摸"
+      ],
+      "query": "TTP223 capacitive touch switch module",
+      "kind": "sensor",
+      "bus": "digital",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "SIG"
+      ]
+    },
+    {
+      "key": "hx711",
+      "names": [
+        "HX711",
+        "称重传感器"
+      ],
+      "patterns": [
+        "HX711",
+        "称重"
+      ],
+      "query": "HX711 load cell amplifier module",
+      "kind": "sensor",
+      "bus": "digital",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "DT",
+        "SCK"
+      ]
+    },
+    {
+      "key": "fsr",
+      "names": [
+        "FSR402",
+        "压力传感器"
+      ],
+      "patterns": [
+        "FSR402",
+        "压力传感器"
+      ],
+      "query": "FSR402 force sensitive resistor",
+      "kind": "sensor",
+      "bus": "analog",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "S"
+      ]
+    },
+    {
+      "key": "as5600",
+      "names": [
+        "AS5600",
+        "磁编码器"
+      ],
+      "patterns": [
+        "AS5600"
+      ],
+      "query": "AS5600 magnetic encoder module",
+      "kind": "sensor",
+      "bus": "i2c",
+      "i2c": [
+        "0x36"
+      ],
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "SDA",
+        "SCL"
+      ]
+    },
+    {
+      "key": "rc522",
+      "names": [
+        "RC522",
+        "RFID",
+        "MFRC522"
+      ],
+      "patterns": [
+        "RC522",
+        "MFRC522",
+        "RFID"
+      ],
+      "query": "RC522 RFID module",
+      "kind": "sensor",
+      "bus": "spi",
+      "part_id": null,
+      "pins": [
+        "3V3",
+        "GND",
+        "MOSI",
+        "MISO",
+        "SCK",
+        "SDA",
+        "RST"
+      ]
+    },
+    {
+      "key": "pn532",
+      "names": [
+        "PN532",
+        "NFC"
+      ],
+      "patterns": [
+        "PN532",
+        "\\bNFC\\b"
+      ],
+      "query": "PN532 NFC module I2C",
+      "kind": "sensor",
+      "bus": "i2c",
+      "i2c": [
+        "0x24"
+      ],
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "SDA",
+        "SCL"
+      ]
+    },
+    {
+      "key": "ssd1306",
+      "names": [
+        "SSD1306",
+        "OLED",
+        "0.96 寸"
+      ],
+      "patterns": [
+        "SSD1306",
+        "\\bOLED\\b"
+      ],
+      "query": "SSD1306 0.96 inch OLED I2C module",
+      "kind": "display",
+      "bus": "i2c",
+      "i2c": [
+        "0x3C",
+        "0x3D"
+      ],
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "SCL",
+        "SDA"
+      ]
+    },
+    {
+      "key": "lcd1602",
+      "names": [
+        "LCD1602",
+        "I2C 液晶"
+      ],
+      "patterns": [
+        "LCD1602",
+        "1602"
+      ],
+      "query": "LCD1602 I2C module Arduino",
+      "kind": "display",
+      "bus": "i2c",
+      "i2c": [
+        "0x27",
+        "0x3F"
+      ],
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "SDA",
+        "SCL"
+      ]
+    },
+    {
+      "key": "tm1637",
+      "names": [
+        "TM1637",
+        "数码管"
+      ],
+      "patterns": [
+        "TM1637",
+        "数码管"
+      ],
+      "query": "TM1637 4 digit display module",
+      "kind": "display",
+      "bus": "digital",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "DIO",
+        "CLK"
+      ]
+    },
+    {
+      "key": "ws2812",
+      "names": [
+        "WS2812",
+        "NeoPixel",
+        "RGB 灯带"
+      ],
+      "patterns": [
+        "WS2812",
+        "NeoPixel",
+        "FastLED",
+        "灯带"
+      ],
+      "query": "WS2812B RGB LED strip",
+      "kind": "actuator",
+      "bus": "digital",
+      "part_id": null,
+      "pins": [
+        "5V",
+        "GND",
+        "DIN"
+      ]
+    },
+    {
+      "key": "servo",
+      "names": [
+        "SG90",
+        "MG90S",
+        "舵机",
+        "Servo"
+      ],
+      "patterns": [
+        "SG90",
+        "MG90S",
+        "舵机",
+        "\\bServo\\b"
+      ],
+      "query": "SG90 MG90S micro servo motor",
+      "kind": "actuator",
+      "bus": "pwm",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "SIG"
+      ],
+      "note": "橙色=SIG 红色=VCC 棕色=GND"
+    },
+    {
+      "key": "stepper",
+      "names": [
+        "28BYJ-48",
+        "步进电机",
+        "ULN2003",
+        "A4988",
+        "TMC2209"
+      ],
+      "patterns": [
+        "28BYJ",
+        "ULN2003",
+        "A4988",
+        "TMC2209",
+        "步进电机",
+        "Stepper"
+      ],
+      "query": "28BYJ-48 stepper motor ULN2003 driver board",
+      "kind": "actuator",
+      "bus": "digital",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "IN1",
+        "IN2",
+        "IN3",
+        "IN4"
+      ]
+    },
+    {
+      "key": "dc_motor",
+      "names": [
+        "直流电机",
+        "N20",
+        "电机"
+      ],
+      "patterns": [
+        "N20",
+        "直流电机",
+        "\\bDCMotor\\b"
+      ],
+      "query": "N20 DC gear motor",
+      "kind": "actuator",
+      "bus": "power",
+      "part_id": null,
+      "pins": [
+        "M+",
+        "M-"
+      ]
+    },
+    {
+      "key": "motor_driver",
+      "names": [
+        "L298N",
+        "TB6612",
+        "电机驱动"
+      ],
+      "patterns": [
+        "L298N",
+        "TB6612",
+        "DRV8833",
+        "电机驱动"
+      ],
+      "query": "L298N motor driver module",
+      "kind": "driver",
+      "bus": "digital",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "IN1",
+        "IN2",
+        "ENA",
+        "OUT1",
+        "OUT2"
+      ]
+    },
+    {
+      "key": "pca9685",
+      "names": [
+        "PCA9685",
+        "舵机驱动板"
+      ],
+      "patterns": [
+        "PCA9685",
+        "Adafruit_PWMServoDriver"
+      ],
+      "query": "PCA9685 16 channel PWM servo driver module",
+      "kind": "driver",
+      "bus": "i2c",
+      "i2c": [
+        "0x40"
+      ],
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "SDA",
+        "SCL"
+      ]
+    },
+    {
+      "key": "relay",
+      "names": [
+        "继电器",
+        "relay"
+      ],
+      "patterns": [
+        "继电器",
+        "relay"
+      ],
+      "query": "5V relay module Arduino",
+      "kind": "actuator",
+      "bus": "digital",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "IN"
+      ]
+    },
+    {
+      "key": "fan",
+      "names": [
+        "风扇",
+        "fan"
+      ],
+      "patterns": [
+        "风扇",
+        "\\bfan\\b"
+      ],
+      "query": "40mm DC cooling fan",
+      "kind": "actuator",
+      "bus": "power",
+      "part_id": null,
+      "pins": [
+        "+",
+        "-"
+      ]
+    },
+    {
+      "key": "pump",
+      "names": [
+        "水泵",
+        "pump"
+      ],
+      "patterns": [
+        "水泵",
+        "pump"
+      ],
+      "query": "mini water pump DC 5V",
+      "kind": "actuator",
+      "bus": "power",
+      "part_id": null,
+      "pins": [
+        "+",
+        "-"
+      ]
+    },
+    {
+      "key": "buzzer",
+      "names": [
+        "蜂鸣器",
+        "buzzer"
+      ],
+      "patterns": [
+        "蜂鸣器",
+        "buzzer",
+        "Buzzer"
+      ],
+      "query": "active buzzer module Arduino",
+      "kind": "actuator",
+      "bus": "digital",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "S"
+      ]
+    },
+    {
+      "key": "dfplayer",
+      "names": [
+        "DFPlayer",
+        "MP3 模块"
+      ],
+      "patterns": [
+        "DFPlayer",
+        "DFRobotDFPlayerMini"
+      ],
+      "query": "DFPlayer Mini MP3 module",
+      "kind": "actuator",
+      "bus": "uart",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "RX",
+        "TX"
+      ]
+    },
+    {
+      "key": "sd_card",
+      "names": [
+        "SD 卡模块",
+        "microSD"
+      ],
+      "patterns": [
+        "\\bSD\\.h",
+        "SD卡",
+        "microSD"
+      ],
+      "query": "micro SD card module Arduino SPI",
+      "kind": "storage",
+      "bus": "spi",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "MOSI",
+        "MISO",
+        "SCK",
+        "CS"
+      ]
+    },
+    {
+      "key": "ds3231",
+      "names": [
+        "DS3231",
+        "RTC"
+      ],
+      "patterns": [
+        "DS3231",
+        "DS1307",
+        "\\bRTC\\b"
+      ],
+      "query": "DS3231 RTC module",
+      "kind": "sensor",
+      "bus": "i2c",
+      "i2c": [
+        "0x68"
+      ],
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "SDA",
+        "SCL"
+      ]
+    },
+    {
+      "key": "adxl345",
+      "names": [
+        "ADXL345"
+      ],
+      "patterns": [
+        "ADXL345"
+      ],
+      "query": "ADXL345 accelerometer module",
+      "kind": "sensor",
+      "bus": "i2c",
+      "i2c": [
+        "0x53"
+      ],
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "SDA",
+        "SCL"
+      ]
+    },
+    {
+      "key": "ads1115",
+      "names": [
+        "ADS1115",
+        "ADS1015"
+      ],
+      "patterns": [
+        "ADS111[35]"
+      ],
+      "query": "ADS1115 ADC module",
+      "kind": "adc",
+      "bus": "i2c",
+      "i2c": [
+        "0x48"
+      ],
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "SDA",
+        "SCL"
+      ]
+    },
+    {
+      "key": "gps",
+      "names": [
+        "GPS",
+        "NEO-6M"
+      ],
+      "patterns": [
+        "NEO-?6M",
+        "TinyGPS"
+      ],
+      "query": "NEO-6M GPS module",
+      "kind": "module",
+      "bus": "uart",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "TX",
+        "RX"
+      ]
+    },
+    {
+      "key": "hc05",
+      "names": [
+        "HC-05",
+        "HC-06",
+        "蓝牙模块"
+      ],
+      "patterns": [
+        "HC-0[56]",
+        "蓝牙模块",
+        "BluetoothSerial"
+      ],
+      "query": "HC-05 bluetooth module",
+      "kind": "module",
+      "bus": "uart",
+      "part_id": null,
+      "pins": [
+        "VCC",
+        "GND",
+        "TX",
+        "RX"
+      ]
+    },
+    {
+      "key": "sdcard_writer",
+      "names": [],
+      "patterns": [
+        "^$"
+      ],
+      "query": "",
+      "kind": "skip",
+      "part_id": null,
+      "pins": []
+    }
+  ],
+  "unknown_library_hints": {
+    "Adafruit_": "Adafruit 系列库，具体器件需从类名/构造参数确认",
+    "SparkFun_": "SparkFun 系列库",
+    "Seeed_": "Seeed 系列库",
+    "DHT": "温湿度传感器库",
+    "Wire": "I2C 总线（非元件）",
+    "SPI": "SPI 总线（非元件）",
+    "Adafruit_Sensor": "Adafruit 传感器抽象层（非元件）",
+    "EEPROM": "片内 EEPROM（非元件）",
+    "WiFi": "ESP32 WiFi（片内）",
+    "BLEDevice": "ESP32 蓝牙（片内）",
+    "Arduino": "Arduino 核心（非元件）",
+    "math": "数学库（非元件）",
+    "ESP32": "ESP32 核心（非元件）",
+    "FS": "文件系统（片内）",
+    "SD": "SD 卡库",
+    "SPIFFS": "片内文件系统",
+    "LittleFS": "片内文件系统",
+    "esp_": "ESP-IDF 组件",
+    "driver/": "ESP-IDF 驱动"
+  }
+}
