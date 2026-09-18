@@ -23,7 +23,7 @@ python3 -m pip install pillow
 
 ### 2. 放进你的 Agent 技能目录
 
-**方式一：让 Agent 自己装。** 把下面这段原样发给你的 Agent，它会自己完成克隆与依赖检查：
+**A. 让 Agent 自己装。** 把下面这段原样发给你的 Agent，它会自己完成克隆与依赖检查：
 
 ```text
 请从 GitHub 安装 skill：https://github.com/YinglunMao/ino-fritzing-diagram
