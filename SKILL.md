@@ -2,9 +2,9 @@
 name: ino-fritzing-diagram
 description: 从 Arduino/ESP32 sketch（.ino）识别所用电子元件与开发板型号，生成 Fritzing Parts 风格元件 SVG 与「无面包板」接线图。**有实拍照片时优先按照片识别**（照片不够清晰才用 Bing 图片搜索比对，最后才询问用户）。接线图元件均分在开发板两侧，供电/接地直接回到板上引脚（供电红、接地黑、其余每根线颜色不同）。
 metadata:
-  author: WorkBuddy
+  author: YinglunMao
   agent_created: true
-version: 1.1.0
+version: 1.3.0
 display_name: "Arduino 元件识别与 Fritzing 接线图"
 display_name_en: "Arduino Parts Detector & Fritzing Wiring Diagram"
 ---
@@ -26,12 +26,13 @@ display_name_en: "Arduino Parts Detector & Fritzing Wiring Diagram"
  ⓪ photo_probe.py    ── 【有照片就走这条】切片/放大/测色，先从照片认出元件与板子
  ① parse_ino.py      ── 解析 ino：元件清单 + 引脚定义 + I2C 地址 + 注释里的接法
  ② detect_board.py   ── arduino-cli + pins_arduino.h（**仅作旁证，不可单独采信**）
- ③ 【判定】照片/Bing 都对不上 → 才 AskUserQuestion 问用户
+ ③ 【判定】照片/Bing 都对不上 → 才停下来问用户
  ④ bing_images.mjs   ── Chrome CDP 搜 Bing 图片，用参考图**比对确认**型号
  ⑤ contact_sheet.py  ── 拼图，用图像识读能力判断 PCB 颜色/外形/接口/丝印
  ⑥ build_parts.py    ── 生成 Fritzing 风格元件 SVG + 引脚坐标表
  ⑦ build_wiring.py   ── 依据网络表生成接线图 SVG（两侧分布 / 无独立电源轨）
- ⑧ render 自检        ── cdp.mjs shot 把 SVG 光栅化，肉眼核对后再交付
+ ⑧ check_wiring.py   ── 几何自检：重叠 / 贴线 / 穿体 / 落图错位，**不开浏览器**
+ ⑨ render 自检        ── cdp.mjs shot 把 SVG 光栅化，肉眼核对外观后再交付
 ```
 
 **每一步产物都要落盘**，便于用户复核与二次修改。
@@ -60,24 +61,24 @@ display_name_en: "Arduino Parts Detector & Fritzing Wiring Diagram"
 
 | 依赖 | 检查方式 | 缺失怎么办 |
 |------|---------|-----------|
-| Node 22+ | `node -v`（需原生 WebSocket） | 用 `install_binary` 装 |
+| Node 22+ | `node -v`（需原生 WebSocket） | 装一个 22+（nvm / 官网 / 包管理器均可） |
 | Chrome / Chromium / Edge | 任一路径在 `cdp.mjs` 的 `CHROME_CANDIDATES` 中 | 自启 headless；也可用 `CHROME_PATH` 环境变量指定 |
 | arduino-cli | `arduino-cli version` | `brew install arduino-cli`（Linux 见官方 apt 源）；仅作旁证，缺了也能跑 |
 | Python + Pillow | `python -c "import PIL"` | 装到隔离 venv（`pip install pillow`） |
 
-脚本一律用绝对路径调用托管运行时。**Node 版本目录名会变（`22.22.2-2` → `22.22.2-3` …），
-不要写死**，用下面这段自动取最新版：
+脚本一律用绝对路径调用。运行时**不要写死路径**（Node 的托管版本目录名会带版本后缀变动），
+按下面这段定位，能跑通就行：
 
 ```bash
-SKILL="$HOME/.workbuddy/skills/ino-fritzing-diagram"
-# Node：托管版本目录名带版本后缀，取最新那个；取不到就退回系统 node
-NODE=$(ls -d "$HOME"/.workbuddy/binaries/node/versions/*/bin/node 2>/dev/null | sort -V | tail -1)
-[ -x "$NODE" ] || NODE=$(command -v node || true)
-# Python：优先托管 venv（保证有 Pillow），否则退回系统 python3
-PY="$HOME/.workbuddy/binaries/python/envs/default/bin/python"
-[ -x "$PY" ] || PY=$(command -v python3 || true)
-# 若 $NODE 为空 → 用 install_binary 装 Node 22+（需要原生 WebSocket）
-# 若 $PY 缺 Pillow → "$PY" -m pip install pillow
+# 本 skill 所在目录（改成你实际放它的位置）
+SKILL="${SKILL_DIR:-$HOME/skills/ino-fritzing-diagram}"
+# Node 22+：需要原生 WebSocket，取不到或版本过低就装一个 22+
+NODE=$(command -v node || true)
+# Python：要能 import PIL；缺 Pillow 就建隔离 venv 装一个
+PY=$(command -v python3 || true)
+# 若已用 venv / 版本管理器管运行时，直接取它的绝对路径，别写死某个产品的安装目录
+# 若 $NODE 为空：装 Node 22+（nvm / 官网 / 包管理器任选）
+# 若 $PY 缺 Pillow："$PY" -m pip install pillow
 ```
 
 ## 步骤 ⓪ 先看照片（有照片就走这一步，优先于一切）
@@ -265,38 +266,80 @@ $PY $SKILL/scripts/build_wiring.py --spec "<sketch>/fritzing/wiring_spec.json" \
 ```
 
 - `nodes[0]` 是**板上锚点引脚**；其余是各元件引脚。一个网络可同时含上下两侧的元件。
-- 布线器自动分侧扇出：同侧直接「锚点 → 板外通道 → 各分支」；**跨侧**的线沿板子
-  **短边外侧**绕行，绝不穿过板体。
-- 通道按「跨度大的靠板、跨度小的靠外」自动排序，避免交叉。
+- 布线器自动分侧扇出：同侧「锚点 → 板外通道 → 各分支」；**跨侧**的线沿板子**短边外侧**绕行，绝不穿过板体。
 - **上半区元件必须 `"rot": 180`**，否则引脚朝上、背离板子（`Instance.pin()` 会翻转 `dir`）。
 
-**B. `rails`（旧版，会拉出红/黑两条总线轨）** —— 只有在用户明确要「电源轨」画法时才用。
+### 布线为什么要「独占坐标」（踩过的坑）
+
+早期版本里**所有跨侧网络共用同一个拐点 y 和同一条竖直车道 x**，结果 4 条网络从 y=478 到 y=787
+完全重叠在 x=363 上，看上去就是一根混色的粗线。现在的规则是：
+
+| 对象 | 保证 |
+|------|------|
+| 水平通道 y | 每个「网络 × 有落点的一侧」**独占**一条，间距恒定 `LANE_GAP` |
+| 绕行拐点 y | 每条跨侧网络**独占**一个（板边「颈区」内），间距 `NECK_GAP` |
+| 绕行车道 x | 每条跨侧网络**独占**一条（板子短边外侧），间距 `WRAP_GAP`；车道越靠外，拐点离板越远 |
+| 空间 | 不够就把元件推远、画布加高（`_need()` 算净空），**绝不压缩间距硬塞** |
+| 干线 vs 落线 | 「板引脚竖线」与「元件焊盘竖线」横向近于 `SEP_X` 时，把干线所属网络**挪到更靠板**的位置，让两条竖线的 y 区间不再相交 |
+
+**B. `rails`（早期布局，会拉出红/黑两条总线轨）** —— 仅在用户明确要「电源轨」画法时使用。
+`check_wiring.py` 对它同样有效，但它的通道是 spec 写死的（`lane` / `lane_x`），
+密度高时更容易挤，**优先用 `two_sided`**。
+它现在会做两件补救：落轨竖线若正好落在开发板横向范围内（模块的电源脚正好在板子正下方），
+先横挪到板子短边外再落到轨上，不再从板体里穿过；短竖线还会小幅横挪躲开附近的板引脚走线。
+顺序上**先画信号线、再画电源线**，这样绕板时才知道信号走线在哪。
+
+`layout` 不写时自动判断：有 `groups` + `board_id` 走 `two_sided`，否则退回 `rails`。
 
 ### 自动布局要点
 
 - 上半区在 `y` 小的一侧，下半区在 `y` 大的一侧，开发板居中；两侧元件数量尽量相等
-- 上下两区之间要给通道留够空间（每条通道约 26px，通道数 = 该侧参与的网络数）
+- **不用自己算通道间距**：`_plan_fans()` 会按网络数算净空并自动撑开画布
 - 模块**引脚朝向**要对着开发板：上区 `rot:180`、下区不旋转
+- 元件标题默认**朝外**（上区在上、下区在下），避免被走线带的竖线穿过；
+  想手动指定用 `caption_pos` / `caption_xy`
 
 ## 步骤 ⑧ 自检（必做）
 
+**先跑几何自检 —— 不需要开浏览器，能直接判定「线有没有叠在一起」：**
+
 ```bash
-$NODE $SKILL/scripts/cdp.mjs shot --url "file://<abs>/wiring.svg" \
-      --file /tmp/check.png --width 1460 --height 1420 --scale 1.2 --full true
+$PY $SKILL/scripts/build_wiring.py --spec "<sketch>/fritzing/wiring_spec.json" \
+    --out "<sketch>/fritzing/wiring.svg" --debug-json /tmp/wiring.debug.json
+$PY $SKILL/scripts/check_wiring.py --debug-json /tmp/wiring.debug.json   # 退出码 0 = 通过
 ```
 
-读这张 PNG，逐项核对：
+它按坐标算出四类问题（都是「线看起来糊成一团」的真凶）：
 
-- [ ] 每根导线**两端都落在焊盘/丝印位置上**，没有悬空
-- [ ] **没有导线穿过开发板板体**（跨侧的线应绕板子短边外侧走）
+1. **重叠** —— 两条不同网络的线画在同一根线上（共线且区间相交）
+2. **贴线** —— 两条不同网络的平行线横向距离小于 `--sep`，中间留不出空隙
+3. **穿体** —— 导线从元件本体或开发板内部穿过
+4. **错位** —— SVG 里**实际画上去**的元件位置 ≠ 布线按以走的坐标。
+
+第 ④ 条是给 `build_wiring.py` 自己上的保险。踩过的坑：`_plan_fans()` 为了腾出通道会把元件
+整体下移，如果**先 `embed()` 落图、后规划**，元件就画在旧坐标上，而导线按新坐标走 ——
+线头会整整齐齐地悬在元件外面一整个通道带的距离，`①`～`③` 全都查不出来（因为大家都用新坐标）。
+所以 `build()` 里必须先 `_plan_fans()` 再 `embed()`；`Instance.embed()` 会把自己**落图那一刻**
+的坐标写成 `data-box`，`check_wiring.py` 拿它跟 `--debug-json` 的外框对照，谁在落图后动过元件立刻露馅。
+
+过不了就回头查 `_plan_fans()` 的通道分配或元件的 `x/y`，**不要靠肉眼硬看**。
+
+**再渲染一张做人工核对**（自检只能查几何，查不了文字压盖与外形是否像实物）：
+
+```bash
+$NODE $SKILL/scripts/cdp.mjs shot --url "file://<abs>/wiring.svg" \
+      --file /tmp/check.png --width 1460 --height 1560 --scale 1.2 --full true
+```
+
 - [ ] 红线只接 VCC，黑线只接 GND，其余线颜色两两不同
 - [ ] 汇流点只在真正并联处出现；交叉处没有误加圆点
 - [ ] 文字不互相压盖（必要时用 `halo` 白描边，或调 `caption_xy`）
 - [ ] 元件比例正常（对照 `_pins.json` 里的 `size_mm`）
 - [ ] 可选/未使用的引脚（如代码里没读的 INT）用虚线并在图例注明
 - [ ] **板子外形与照片一致**（底色、按钮、USB 位置、指示灯丝印）
+- [ ] 图例与注释紧贴内容下方，没有大块空白、也没压到元件
 
-不合格就改 `parts_library.py` / `wiring_spec.json` 后重跑，**不要交付没看过的 SVG**。
+不合格就改 `parts_library.py` / `wiring_spec.json` 后重跑，**不要交付没自检过的 SVG**。
 
 ## 复用与扩展
 
@@ -306,6 +349,9 @@ $NODE $SKILL/scripts/cdp.mjs shot --url "file://<abs>/wiring.svg" \
 | 换开发板 | 往 `references/boards.json` 加一条（尺寸/配色/孔位/排针/装饰件），**不用写代码**；查询用 `boards.py --list` / `--match` |
 | 目录外的板 | 自动走 `boards.py` 的 `generic_board()`：引脚名真实、外形示意，并在 `meta.warnings` 里告知 |
 | 换配色 | 改 `fritzing_kit.py` 的 `C` 调色板 |
+| 线还是挤在一起 | 跑 `check_wiring.py` 看是哪一类（重叠/贴线/穿体/错位），再调 `_plan_fans()` 的间距常量或元件的 `x/y` |
+| 线头悬在元件外面 | 说明落图顺序被改了：`build()` 里必须 `_plan_fans()` → `embed()`，跑 `check_wiring.py` 的第 ④ 条能直接指认 |
+| 想加一条新的避让规则 | 在 `build_wiring.py` 里加一个几何测试（照 `_seg_clash` 写），让规划阶段反复试探直到满足；不要再靠调大间距常量硬顶 |
 | 出一份 PDF/长图 | 用 `cdp.mjs shot` 加大 `--scale` 光栅化，或直接把 SVG 交给用户（矢量可无损缩放） |
 | 照片看不清 | `photo_probe.py --tiles` 切片 → `--crop ... --rotate 180 --contrast 2.5` 逐块读 |
 
