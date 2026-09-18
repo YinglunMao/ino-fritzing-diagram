@@ -35,7 +35,7 @@ python3 -m pip install pillow
 3. 跑一遍 README「验证」一节里的命令，把结果告诉我。
 ```
 
-**方式二：手动克隆。**
+**B. 手动克隆。**
 
 ```bash
 git clone https://github.com/YinglunMao/ino-fritzing-diagram.git \
