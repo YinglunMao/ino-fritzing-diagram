@@ -965,23 +965,25 @@
       "source": "https://pico.pinout.xyz/ + https://datasheets.raspberrypi.com/pico/pico-datasheet.pdf —— 物理针位 1-40 与 Pico 官方 pinout 一致；PCB 为绿色（官方规格）"
     },
     {
-      "id": "esp32s3_nano_white",
-      "name": "ESP32-S3 Nano（白色 PCB）",
-      "hand_tuned": "esp32s3_nano_white",
+      "id": "esp32s3_nano_blue",
+      "name": "ESP32-S3 Nano（浅蓝 PCB）",
+      "hand_tuned": "esp32s3_nano_blue",
       "fqbn": null,
       "variants": [
         "esp32s3"
       ],
       "match": [
+        "esp32s3_nano_blue",
         "esp32s3_nano_white",
         "esp32-s3 nano",
+        "浅蓝板 esp32s3",
         "白板 esp32s3"
       ],
       "size_mm": [
         52.8,
         20.5
       ],
-      "source": "实拍照片识别（白 PCB、黑丝印、BOOT/RST、PWR+G48 指示灯、短边 USB、丝印直接印 GPIO 号）"
+      "source": "用户实拍照片逐字核对（浅蓝阻焊 + 深色丝印、半孔焊盘 20+20、BOOT/RST、PWR+G48 指示灯、短边 USB-C、丝印直接印 GPIO 号；靠 USB 一端为 1 号针，两排均以 GND 起头）"
     },
     {
       "id": "geekble_nano_esp32s3",

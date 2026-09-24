@@ -71,6 +71,7 @@ two_sided 布局规格 JSON
 from __future__ import annotations
 
 import argparse
+import itertools
 import json
 import math
 import os
@@ -462,16 +463,40 @@ class WiringBuilder:
         两者横向一旦过近、y 区间又相交，就会并成一根双色线。
         而干线的 y 区间是 [通道…板引脚]、落线是 [焊盘…通道]，
         两者相交**当且仅当干线所属网络排在更外侧** —— 所以消解办法就是把它挪到更靠板的位置。
+
+        两两交换**不是总能收敛**：一对网络互换之后可能各自都还冲突（A 的干线压 B 的落线，
+        B 的干线又压 A 的落线），交换就会来回震荡、30 次后带着坏顺序退出。这时退到全排列
+        搜索；再找不到干净顺序就明确告警，而不是悄悄画出一条贴线。
         """
         order = [nid for nid, _ in sorted(items, key=lambda t: -t[1])]
+
+        def lane_ys(seq):
+            return {nid: base + sign * k * LANE_GAP for k, nid in enumerate(seq)}
+
+        if not self._first_lane_clash(side, order, lane_ys(order)):
+            return order
+
+        cur = list(order)
         for _ in range(30):
-            lane_y = {nid: base + sign * k * LANE_GAP for k, nid in enumerate(order)}
-            clash = self._first_lane_clash(side, order, lane_y)
+            clash = self._first_lane_clash(side, cur, lane_ys(cur))
             if not clash:
-                break
+                return cur
             a, b = clash
-            i, j = order.index(a), order.index(b)
-            order[i], order[j] = order[j], order[i]
+            i, j = cur.index(a), cur.index(b)
+            cur[i], cur[j] = cur[j], cur[i]          # 交换；下一轮没变好就说明在震荡
+
+        if len(order) <= 7:
+            for perm in itertools.permutations(order):
+                seq = list(perm)
+                if not self._first_lane_clash(side, seq, lane_ys(seq)):
+                    return seq
+
+        clash = self._first_lane_clash(side, order, lane_ys(order))
+        if clash:
+            sys.stderr.write(
+                f"[build_wiring] 警告：{side} 侧网络 {clash[0]} 与 {clash[1]} 无论怎么排通道都会贴线。\n"
+                f"               最省事的解法是把相关元件横向挪一挪，让落线 x 与干线 x 差开 "
+                f"≥{SEP_X:g}px。\n")
         return order
 
     def _trunk_iv(self, side, nid, lane_y):
@@ -547,6 +572,10 @@ class WiringBuilder:
         self.n_neck = {s: sum(1 for nid, hm in self.home_of.items()
                               if hm == s and (self.sides_of[nid] - {s}))
                        for s in ("top", "bottom")}
+        # 开发板「有走线的那一侧」——它的标注要放到反面去。板子两侧都可能有引脚，
+        # 但真正拉线出去的是 home 侧；标注留在这一侧就会跟整个扇出带抢地方。
+        homes = list(self.home_of.values())
+        self.board_wired_side = max(set(homes), key=homes.count) if homes else "bottom"
 
     def _need(self, side):
         """该侧从板边到元件之间所需的竖直净空（颈区 + 通道 + 安全距离）"""
@@ -838,12 +867,20 @@ class WiringBuilder:
         )
 
     def _tag(self, inst, pname, pin):
-        """板上引脚的标注：丝印名与 GPIO 号不同则并列显示，相同则只显示 GPIO 号。"""
+        """板上引脚的标注：丝印名与 GPIO 号指同一个脚，就只写 GPIO 号。
+
+        很多开发板的丝印是补零写法（04 / 05），跟 GPIO 号本来就是同一个引脚，
+        照字面并列会变成「04 · GPIO4」这种废话，标签一宽就更容易压到走线上。
+        """
         label = pin.get("label", pname)
         gpio = pin.get("gpio")
         if gpio is None:
             return label
-        return f"GPIO{gpio}" if label == str(gpio) else f"{label} · GPIO{gpio}"
+        try:
+            same = int(label) == int(gpio)
+        except (TypeError, ValueError):
+            same = str(label) == str(gpio)
+        return f"GPIO{gpio}" if same else f"{label} · GPIO{gpio}"
 
     def _pin_tag(self, x, y, d, pin, text):
         """只在开发板引脚处标注「丝印名 · GPIO号」——模块侧已有板上丝印，不重复标注"""
@@ -859,7 +896,11 @@ class WiringBuilder:
             pos = inst.caption_pos
             if self.layout == "two_sided" and not inst.caption_pos_explicit:
                 # 标题一律朝外：走线带在板与元件之间，标题留在外面才不会被竖线穿过
-                pos = "above" if self.side_of.get(inst.id) == "top" else "below"
+                if self.board is not None and inst.id == self.board.id:
+                    # 开发板：板子的走线走哪一侧，标题就躲到另一侧
+                    pos = "below" if self.board_wired_side == "top" else "above"
+                else:
+                    pos = "above" if self.side_of.get(inst.id) == "top" else "below"
             if inst.caption_xy:
                 self.s.text(inst.caption_xy[0], inst.caption_xy[1], inst.caption,
                             size=13, fill="#20262E", anchor=inst.caption_anchor,

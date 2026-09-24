@@ -354,12 +354,18 @@ $NODE $SKILL/scripts/cdp.mjs shot --url "file://<abs>/wiring.svg" \
 | 想加一条新的避让规则 | 在 `build_wiring.py` 里加一个几何测试（照 `_seg_clash` 写），让规划阶段反复试探直到满足；不要再靠调大间距常量硬顶 |
 | 出一份 PDF/长图 | 用 `cdp.mjs shot` 加大 `--scale` 光栅化，或直接把 SVG 交给用户（矢量可无损缩放） |
 | 照片看不清 | `photo_probe.py --tiles` 切片 → `--crop ... --rotate 180 --contrast 2.5` 逐块读 |
+| **丝印针位怎么核** | **逐字抄，别按功能猜**：把照片转成「USB 在右」的横向，两排丝印从头抄到位，再标出 sketch 用到的脚落在**哪一排第几位**。实测出现过「用到的脚全在同一排」的情况 —— 那就必须单侧布局，不能均分上下 |
+| 板名标注被走线穿过 | 开发板标题现在会自动画到**没有走线的那一侧**（`board_wired_side`）；若手写了 `caption_pos` 又正好压在走线上，删掉该字段让自动规则接管 |
+| 告警「无论怎么排通道都会贴线」 | 通道排序器在贪心交换**震荡**时已退到全排列搜索；仍告警就得动元件 `x` —— 让落线 x 与干线 x 差开 ≥`SEP_X`。**最有效的做法是让模块的脚位对齐到板子脚位**（例：模块 GND 正对板子 GND），两条线各自变成一根直竖线 |
+| 照片有透视，量出的元件位置偏小 | 透视会压缩远端：**丝印/针位可以逐字照抄，板面装饰件的位置只作示意**。别按像素去抠板面元件坐标，越抠越偏 |
 
 ### 已收录的元件（`REGISTRY`）
 
-`geekble_nano_esp32s3` · `esp32s3_nano_white`（白色 PCB 版）· `mpu6050_gy521` ·
+`geekble_nano_esp32s3` · `esp32s3_nano_blue`（浅蓝 PCB 半孔板，照片逐字校对，旧 id
+`esp32s3_nano_white` 是别名）· `mpu6050_gy521` ·
 `as7341_module`（蓝板）· `as7341_black6`（黑板 6 针，照片版）· `pulse_sensor` ·
-`mic_lm2904_module`（深蓝 FC-04）· `mic_sound_blue`（亮蓝咪头，照片版）
+`mic_lm2904_module`（深蓝 FC-04）· `mic_sound_blue`（亮蓝咪头，照片版）·
+`pump_module_gvs`（微型潜水泵 + G-V-S 驱动板，照片版）
 
 ### 已收录的板卡（`references/boards.json`）
 
@@ -370,7 +376,7 @@ $NODE $SKILL/scripts/cdp.mjs shot --url "file://<abs>/wiring.svg" \
 | `esp32_devkitc` | ESP32 DevKitC v4 | 25.4×52.4 | 左右各 19 |
 | `esp8266_nodemcu` | NodeMCU v3 (LoLin) | 25.4×48.0 | 左右各 15 |
 | `rp_pico` | Raspberry Pi Pico (RP2040) | 21.0×51.0 | 左右各 20 |
-| `esp32s3_nano_white` | ESP32-S3 Nano（白 PCB） | 52.8×20.5 | 上下各 20 |
+| `esp32s3_nano_blue` | ESP32-S3 Nano（浅蓝 PCB · 半孔焊盘） | 52.8×20.5 | 上下各 20 |
 | `geekble_nano_esp32s3` | Geekble nano ESP32-S3 | 43.2×17.8 | 上下各 15 |
 
 板卡不在这张表里也能跑 —— `generic_board()` 会用真实引脚名兜底渲染。
@@ -379,7 +385,7 @@ $NODE $SKILL/scripts/cdp.mjs shot --url "file://<abs>/wiring.svg" \
 
 1. **arduino-cli 的板名可能是自己印证自己** —— ESP32-S3 原生 USB 会把上次编译时的
    `USB_PRODUCT` 写进描述符，arduino-cli 按 VID/PID 反查就报那块板。
-   实测：报 `Geekble nano ESP32-S3`，照片里却是**白色 PCB** 的另一块板。
+   实测：报 `Geekble nano ESP32-S3`，照片里却是**浅蓝 PCB 的另一块板**。
    → **落笔前必须用照片核对外形。**
 2. **丝印可能是倒的、可能是白底黑字** —— 不 `--rotate 180` / `--contrast 2.5`
    就读不出来；`photo_probe.py --color` 可以客观测底色，别凭肉眼猜。
@@ -400,6 +406,17 @@ $NODE $SKILL/scripts/cdp.mjs shot --url "file://<abs>/wiring.svg" \
     否则整串字会镜像倒置。
 11. **元件上的丝印别和引脚名抢同一条带** —— 圆形板（如 PulseSensor）的顶部被接线
     凸台和引脚名占满，环形丝印要挪到下方弧线，并让开安装孔。
+12. **丝印针位只能「抄」，不能「按功能摆」** —— 这是本 skill 最容易出的错，
+    而且**照片分辨率不足时几乎必然发生**：读不清 40 个针位就会按「3V3/RST 在左、
+    GPIO 在右」之类的常识去凑。实测第一次就是这样，把**本在同一排**的
+    `04/05/GND/08/09/10/11/3V3` 拆到了两排，整张图的方向都错了。
+    → 分辨率不够就**向用户要一张正面特写**，别凑；拿到清晰照片后逐字抄两排，并写进 spec 的 `notes`。
+13. **半孔焊盘（castellated）不要用 SVG 圆弧画** —— 圆弧的 sweep 方向在 y 轴向下的
+    画布里极容易搞反，画出来会变成「整圆焊盘压在板边外」。改成按解析式采样折线
+    （`_half_disc()`：`cx + r·cosθ, cy + inward·r·sinθ`），方向由 `inward=±1` 决定，不会反。
+14. **板子两排的编号方向要跟 USB 座定位** —— 同一块板横放/竖放、照片旋转方向不同，
+    「01 在哪一端」会反转。先确认 **USB 座在哪一端**，再从「无 USB 那一端」起读编号；
+    给用户看图时在标题里写明这一点（本图：`01 在无 USB 的一端`）。
 
 ## 交付
 

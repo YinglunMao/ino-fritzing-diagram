@@ -17,10 +17,11 @@ parts_library.py — 每个元件的 Fritzing 风格 SVG 渲染器
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 
-from fritzing_kit import (C, Svg, chip_dip, chip_qfn, chip_soic, header, heart, led,
-                          male_pins_out, mic_can, mount_hole, pad, passive, pcb,
+from fritzing_kit import (C, MM, Svg, _n, chip_dip, chip_qfn, chip_soic, header, heart,
+                          led, male_pins_out, mic_can, mount_hole, pad, passive, pcb,
                           shield_can, tactile, trimpot, usb_c, via, darken, lighten)
 
 
@@ -296,92 +297,144 @@ def render_mic_lm2904() -> Part:
 
 
 # ===========================================================================
-# 6) ESP32-S3 Nano 开发板（白色 PCB 版，52.8 × 20.5 mm，1×20 针 × 2 排）
-#    依据「用户实拍照片」识别：白底 + 黑丝印、裸 ESP32-S3 QFN、BOOT/RST 轻触键、
-#    短边 USB、PWR + G48 双指示灯；丝印直接标 GPIO 号（非 D0/A0 别名）。
+# 6) ESP32-S3 Nano 开发板（浅蓝 PCB，52.8 × 20.5 mm，半孔焊盘 1×20 针 × 2 排）
+#    丝印逐个字对照用户实拍照片（2026-09-24 那张 6/9 的板子特写）：
+#      · 浅蓝阻焊 + 深色丝印，丝印**直接印 GPIO 号**（不是 D0/A0 别名）
+#      · 半孔（castellated）焊盘贴着板的长边，两排各 20 个
+#      · 靠近 USB 的那一端是 1 号针，两排都以 GND 起头
+#      · 每排第 2、4 个针位印的是「角标」而非文字（把 5V / 3V3 框起来）
 # ===========================================================================
-# 板上丝印顺序（照片可辨部分：3V3 … 07 08 09 10 11 12 13 14 / 5V GND BOOT 48 47 38 39 40 21）
-# 本电路用到的 GPIO 按「上排接下侧元件友好、下排接上侧元件友好」排布，
-# **实际针位请以实物丝印为准**（此板丝印直接印 GPIO 号）。
-NANO_ROW_A = ["3V3", "5", "8", "9", "11", "1", "2", "3", "6", "7",
-              "15", "16", "17", "43", "46", "12", "13", "14", "47", "48"]
-NANO_ROW_B = ["5V", "GND_B", "RST", "4", "10", "38", "39", "40", "21", "20",
-              "45", "0", "35", "36", "37", "41", "42", "44", "GND_C", "GND_D"]
+NANO_BLUE = "#BCD7F0"        # 板面（照片取色 #CBE0F7，压一点饱和度更像实物）
+NANO_BLUE_EDGE = "#8FB2D4"
+NANO_INK = "#22303A"         # 丝印墨色（照片实测 #222D35）
+
+# 渲染时 USB 座在板的**右端** → 数组按「远离 USB → 靠近 USB」书写（与照片读序相反）。
+#   top = 照片里印 5V / BAT 的那一列；bot = 印 3V3 / RST 的那一列。
+#   "TK" = 照片里那个角标丝印（不是针名，无法确认为字符，按原样复刻）。
+NANO_ROWS = {
+    "top": ["46", "45", "42", "41", "15", "16", "17", "18", "GND", "21",
+            "40", "39", "38", "47", "48", "BAT", "TK", "5V", "TK", "GND"],
+    "bot": ["01", "02", "03", "04", "05", "06", "GND", "07", "08", "09",
+            "10", "11", "12", "13", "14", "RST", "TK", "3V3", "TK", "GND"],
+}
+
+
+def _half_disc(s: Svg, cx, cy, r, inward, fill, stroke=None, sw=0.14):
+    """以板边为直径、朝板内鼓出的半圆（半孔焊盘用）。
+
+    用折线逼近而不是 SVG 圆弧 —— 圆弧的 sweep 方向在 y 轴向下的画布里很容易搞反，
+    这里直接按解析式采样，inward=+1 一定朝下、-1 一定朝上。
+    """
+    n = 24
+    pts = [(cx + r * math.cos(math.pi * i / n), cy + inward * r * math.sin(math.pi * i / n))
+           for i in range(n + 1)]
+    s.path_pts(pts, fill=fill, stroke=stroke, sw=sw)
+    return s
+
+
+def _castellated_pad(s: Svg, cx, cy, inward, r=0.95, hole_r=0.45):
+    """半孔焊盘：金属半环 + 亮孔，都落在板内（板边把外半圈切掉）。"""
+    _half_disc(s, cx, cy, r, inward, fill=C["silver"], stroke=C["silver_dark"])
+    _half_disc(s, cx, cy, hole_r, inward, fill=C["hole"])
+    return s
+
+
+def _nano_tick(s: Svg, cx, y, up, tick_at=1):
+    """照片里 5V / 3V3 两侧那对「角标」丝印（不是文字，按原样复刻）。
+
+    形状＝一根沿排方向的短横线 + 一端的短竖线。up=True 时竖线朝上（板边方向）。
+    同一排的两枚左右镜像，竖线都落在靠中间那个针名的一侧，合起来像把针名括住。
+    """
+    bar, tick = 1.6, 0.9
+    x1, x2 = cx - bar / 2, cx + bar / 2
+    s.line(x1, y, x2, y, stroke=NANO_INK, sw=0.2, cap="butt")
+    tx = x2 if tick_at > 0 else x1
+    s.line(tx, y, tx, y - tick if up else y + tick, stroke=NANO_INK, sw=0.2, cap="butt")
+    return s
+
+
+def render_esp32s3_nano() -> Part:
+    W, H = 52.8, 20.5
+    PITCH = 2.54
+    X0 = (W - 19 * PITCH) / 2.0          # 2.27mm，与照片里焊盘距板端的余量一致
+
+    s = Svg(W, H, pad_mm=2.2)
+    pcb(s, 0, 0, W, H, fill=NANO_BLUE, edge=NANO_BLUE_EDGE, r=1.1, inner_rim=True)
+
+    # ---- 两排半孔焊盘 + 丝印 ----
+    pins = {}
+    gnd_n = {"top": 0, "bot": 0}
+    for row, names in (("top", NANO_ROWS["top"]), ("bot", NANO_ROWS["bot"])):
+        y = 0.0 if row == "top" else H
+        inward = 1 if row == "top" else -1              # 由板边指向板内
+        dirn = "up" if row == "top" else "down"          # 导线离开板的方向
+        base = 2.15 if row == "top" else H - 1.15        # 丝印基线
+        tk_n = 0
+        for i, nm in enumerate(names):
+            x = X0 + i * PITCH
+            _castellated_pad(s, x, y, inward)
+            if nm == "TK":
+                tk_n += 1
+                _nano_tick(s, x, base - 0.35, up=(row == "top"),
+                           tick_at=(1 if tk_n == 1 else -1))
+                continue
+            s.text(x, base, nm, size=1.0, fill=NANO_INK, weight="800")
+            if nm == "GND":
+                gnd_n[row] += 1
+                key = "GND_%s%s" % ("A" if row == "top" else "B",
+                                    "" if gnd_n[row] == 1 else gnd_n[row])
+            elif nm in ("3V3", "5V", "BAT", "RST"):
+                key = nm
+            else:
+                key = "G" + nm
+            pins[key] = {"x": x, "y": y, "dir": dirn, "label": nm,
+                         "row": "A" if row == "top" else "B",
+                         "gpio": int(nm) if nm.isdigit() else None}
+
+    # ---- 板载元件（位置按照片；USB 在右端） ----
+    # 主控：裸 ESP32-S3 QFN（照片中无屏蔽罩，QFN 偏远离 USB 的一端）
+    chip_qfn(s, 16.2, 13.0, size=6.2, label="")
+    # 板载 Flash / 电源 SOIC-8
+    chip_soic(s, 21.6, 12.0, 4.2, 3.4)
+    # 40MHz 晶振
+    s.rect(11.0, 8.9, 2.2, 1.6, r=0.18, fill=C["silver"], stroke=C["silver_dark"], sw=0.14)
+    s.text(12.1, 10.0, "040J", size=0.55, fill="#6C7378", weight="700")
+    # 远离 USB 的那一端：IPEX 天线座 + 电池连接器
+    s.rect(6.0, 13.6, 3.2, 2.8, r=0.25, fill="#B9BDC1", stroke="#8A9095", sw=0.18)
+    s.circle(7.6, 15.0, 0.85, fill="#6E7378", stroke="#4E5257", sw=0.16)
+    s.circle(7.6, 15.0, 0.3, fill="#2A2D30")
+    s.rect(5.9, 10.4, 3.0, 2.2, r=0.2, fill="#2E6FC4", stroke="#1E4E8F", sw=0.18)
+    # BOOT / RST 轻触键：照片里两键纵向叠放在板宽中段、以板中线对称，
+    # BOOT 靠 46/45 那一排、RST 靠 01 那一排，丝印都印在按键左侧（字头朝上读）
+    tactile(s, 35.0, 6.9, w=3.4, h=3.4)
+    tactile(s, 35.0, 14.0, w=3.4, h=3.4)
+    s.text(31.6, 6.9, "BOOT", size=0.85, fill=NANO_INK, weight="800", anchor="middle", rot=-90)
+    s.text(31.6, 14.0, "RST", size=0.85, fill=NANO_INK, weight="800", anchor="middle", rot=-90)
+    # U1：USB 转串口 / LDO（SOT-23-5，紧邻 USB）
+    chip_soic(s, 41.4, 4.2, 1.9, 2.4, label="U1", legs=3)
+    # PWR / G48 指示灯（照片里紧挨 USB 座两侧）
+    led(s, 41.6, 7.6, 1.5, 0.9, color=C["led_green"])
+    s.text(41.6, 6.4, "G48", size=0.68, fill=NANO_INK, weight="800")
+    led(s, 41.6, 12.4, 1.5, 0.9, color=C["led_red"])
+    s.text(41.6, 13.6, "PWR", size=0.68, fill=NANO_INK, weight="800")
+    # 零星阻容，让板面不那么空
+    for i in range(4):
+        passive(s, 26.0 + i * 1.4, 5.6, 0.9, 0.55)
+        passive(s, 26.0 + i * 1.4, 17.0, 0.9, 0.55)
+    # 短边 USB-C 座（照片里占满板端中间，两排针从其两侧绕过）
+    usb_c(s, W - 9.2, (H - 7.6) / 2, 9.2, 7.6, orient="h")
+
+    return _mk("esp32s3_nano_blue", "ESP32-S3 Nano（浅蓝 PCB）", W, H, s, pins,
+               {"note": "丝印逐个字对照用户实拍照片：浅蓝阻焊 + 深色丝印、半孔焊盘，"
+                        "两排各 20 针。照片里 USB 座在一端，两排的编号（01…14、46…15）"
+                        "都从**无 USB 的那一端**起算。丝印直接印 GPIO 号。"
+                        "每排第 2、4 位是照片里那对角标丝印（把 5V / 3V3 括起来），"
+                        "不是文字，故未登记为可接针位。"})
 
 
 def render_esp32s3_nano_white() -> Part:
-    W, H = 52.8, 20.5
-    PITCH = 2.54
-    X0 = (W - 19 * PITCH) / 2.0
-    YA, YB = 2.1, H - 2.1
-    WHITE = "#EDEFF2"
-    WHITE_E = "#C6CBD2"
-    INK = "#15181C"          # 黑丝印
-
-    s = Svg(W, H, pad_mm=2.2)
-    pcb(s, 0, 0, W, H, fill=WHITE, edge=WHITE_E, r=1.0,
-        holes=[(1.7, 2.1), (W - 1.7, 2.1), (1.7, H - 2.1), (W - 1.7, H - 2.1)],
-        hole_r=0.72, plated=True)
-
-    # 两排焊盘 + GPIO 号丝印
-    pins = {}
-    for i, nm in enumerate(NANO_ROW_A):
-        x = X0 + i * PITCH
-        pad(s, x, YA, r=0.92, hole_r=0.4)
-        s.text(x, 3.7, nm, size=0.95, fill=INK, rot=-90, anchor="end", weight="700")
-        key = "3V3" if nm == "3V3" else "G" + nm
-        pins[key] = {"x": x, "y": YA, "dir": "up", "label": nm, "row": "A",
-                     "gpio": int(nm) if nm.isdigit() and nm != "3V3" else None}
-    # 3V3 不是 GPIO，去掉伪造的 gpio
-    pins["3V3"]["gpio"] = None
-    for i, nm in enumerate(NANO_ROW_B):
-        x = X0 + i * PITCH
-        pad(s, x, YB, r=0.92, hole_r=0.4)
-        shown = "GND" if nm.startswith("GND") else nm
-        s.text(x, H - 3.7, shown, size=0.95, fill=INK, rot=-90, anchor="start",
-               weight="700")
-        if nm.startswith("GND"):
-            key = nm
-        elif nm in ("5V", "RST"):
-            key = nm
-        else:
-            key = "G" + nm
-        pins[key] = {"x": x, "y": YB, "dir": "down", "label": shown, "row": "B",
-                     "gpio": int(nm) if nm.isdigit() else None}
-
-    # 主控：裸 ESP32-S3 QFN（照片中无屏蔽罩）
-    chip_qfn(s, 16.0, H / 2, size=6.0, label="ESP32-S3")
-    # 排针旁的去耦电容阵列
-    for i in range(5):
-        passive(s, 21.5 + i * 1.05, H / 2 - 4.2, 0.85, 0.5)
-        passive(s, 21.5 + i * 1.05, H / 2 + 3.8, 0.85, 0.5)
-    # U1：USB 转串口 / LDO（SOT-23-5，照片中位于 USB 左侧）
-    chip_soic(s, 42.1, H / 2 - 1.5, 1.9, 2.4, label="U1", legs=3)
-
-    # BOOT / RST 轻触按键（照片中位于板中偏右，并排）
-    tactile(s, 35.0, H / 2, w=3.2, h=3.2)
-    tactile(s, 38.8, H / 2, w=3.2, h=3.2)
-    s.text(35.0, H / 2 - 3.1, "BOOT", size=0.8, fill=INK, weight="700")
-    s.text(38.8, H / 2 - 3.1, "RST", size=0.8, fill=INK, weight="700")
-
-    # PWR / G48 双指示灯（照片右侧可见 "PWR" 与 "G48" 丝印）
-    led(s, 30.2, H / 2 - 5.0, 1.5, 0.9, color=C["led_red"])
-    s.text(28.6, H / 2 - 3.7, "PWR", size=0.7, fill=INK, weight="700", anchor="start")
-    led(s, 30.2, H / 2 + 3.6, 1.5, 0.9, color=C["led_green"])
-    s.text(28.6, H / 2 + 5.5, "G48", size=0.7, fill=INK, weight="700", anchor="start")
-
-    # 短边 USB 座（照片中为板右端，横跨板宽）
-    usb_c(s, W - 8.8, H / 2 - 3.9, 8.8, 7.8, orient="h")
-    s.text(47.0, H / 2 + 6.4, "USB", size=0.75, fill=INK, weight="700")
-
-    # 板名丝印（照片中为黑丝印）
-    s.text(9.4, H / 2 + 0.4, "ESP32-S3", size=1.5, fill=INK, weight="800",
-           anchor="middle", rot=-90)
-
-    return _mk("esp32s3_nano_white", "ESP32-S3 Nano（白色 PCB）", W, H, s, pins,
-               {"note": "依据用户实拍照片识别：白底黑丝印 · 裸 ESP32-S3 · BOOT/RST · "
-                        "PWR+G48 指示灯 · 短边 USB。丝印直接标 GPIO 号。"
-                        "未在照片中读到的针位为占位，请以实物丝印为准。"})
+    """旧 id 别名（早年按「白板」画的版本），保持向下兼容。"""
+    return render_esp32s3_nano()
 
 
 # ===========================================================================
@@ -453,6 +506,122 @@ def render_mic_sound_blue() -> Part:
 
 
 # ===========================================================================
+# 9) 微型潜水泵模块（奶白泵体 + 白色 PCB 驱动板，3 针 G-V-S，照片版）
+#    照片：奶白圆柱泵体（端面中心出水孔 + 底部斜出水嘴）+ 白色驱动板
+#    （G-V-S 白色 JST 连接器、两颗 SOT-23 + 0603 电阻、两个沉金安装孔、
+#      水泵叶轮丝印图标、D 字 logo、板边走线槽 + 黑色热缩管应力释放）
+# ===========================================================================
+def render_pump_module_gvs() -> Part:
+    W, H = 88.0, 40.0
+    IVORY = "#F1ECDC"        # 泵体奶白塑料
+    IVORY_E = "#AFA68E"
+    IVORY_DK = "#DFD8C2"
+    WHITE = "#EDEFF2"        # 白色 PCB
+    WHITE_E = "#C6CBD2"
+    INK = "#3A3E44"          # 深灰丝印（白底板）
+
+    s = Svg(W, H, pad_mm=2.4)
+
+    # ---- 潜水泵（正交俯视：横躺圆柱 → 圆端盖 + 长圆机身 + 斜出水嘴）
+    cx, cy, r_cap = 13.5, 20.0, 10.0
+    bx1, bx2 = 13.5, 45.0    # 机身 x 范围
+    # 机身
+    s.rect(bx1, cy - r_cap, bx2 - bx1, r_cap * 2, r=4.0, fill=IVORY,
+           stroke=IVORY_E, sw=0.25)
+    # 机身纵向棱线（同色系略深）
+    for dy in (-5.2, 5.2):
+        s.line(bx1 + 4.5, cy + dy, bx2 - 4.5, cy + dy, stroke=IVORY_DK, sw=0.5)
+    # 端盖（同心圆）
+    s.circle(cx, cy, r_cap, fill=IVORY, stroke=IVORY_E, sw=0.25)
+    s.circle(cx, cy, 7.6, fill="none", stroke=IVORY_DK, sw=0.4)
+    # 端面中心出水孔
+    s.circle(cx, cy, 2.9, fill="#8A8268", stroke="#6E674F", sw=0.2)
+    s.circle(cx, cy, 1.8, fill="#3E3A2C")
+    # 斜出水嘴（底部朝下）
+    import math as _m
+    ang = _m.radians(52)
+    d = (_m.cos(ang), _m.sin(ang))
+    p = (19.8, 29.6)
+    perp = (d[1] * 2.2, -d[0] * 2.2)
+    ln = 7.6
+    e = (p[0] + d[0] * ln, p[1] + d[1] * ln)
+    s.path_pts([(p[0] + perp[0], p[1] + perp[1]), (e[0] + perp[0], e[1] + perp[1]),
+                (e[0] - perp[0], e[1] - perp[1]), (p[0] - perp[0], p[1] - perp[1])],
+               fill=IVORY, stroke=IVORY_E, sw=0.22)
+    s.line(e[0] + perp[0], e[1] + perp[1], e[0] - perp[0], e[1] - perp[1],
+           stroke=IVORY_E, sw=0.22)
+    # 出水嘴根部法兰环
+    s.line(p[0] + perp[0] * 1.35, p[1] + perp[1] * 1.35,
+           p[0] - perp[0] * 1.35, p[1] - perp[1] * 1.35, stroke=IVORY_E, sw=0.5)
+    # 端盖定位小凸柱（照片中两颗）
+    s.circle(cx + 4.6, cy - 8.4, 0.55, fill=IVORY_DK, stroke=IVORY_E, sw=0.14)
+
+    # ---- 泵 → 驱动板 的黑色导线（画在板之下，端头被热缩管盖住）
+    # 注意：s.path() 的 d 数据需要自行乘 unit（mm→px）
+    u = s.u
+    s.path(f"M {43.0*u} {11.8*u} C {51.0*u} {5.5*u}, {56.0*u} {7.0*u}, {62.2*u} {11.6*u}",
+           fill="none", stroke="#1F2226", sw=1.8, extra='stroke-linecap="round"')
+
+    # ---- 驱动板（白色 PCB，30 × 24 mm，圆角）
+    BX, BY, BW, BH = 55.0, 12.0, 30.0, 24.0
+    pcb(s, BX, BY, BW, BH, fill=WHITE, edge=WHITE_E, r=1.8,
+        holes=[(3.5, 3.5), (27.4, 17.6)], hole_r=1.45, plated=True)
+    # 板边走线槽示意（热缩管两侧的槽口刻线）
+    s.line(60.2, BY, 60.2, BY + 2.6, stroke=WHITE_E, sw=0.3)
+    s.line(66.6, BY, 66.6, BY + 2.6, stroke=WHITE_E, sw=0.3)
+
+    # ---- 3 针白色 JST 连接器（G-V-S）+ 焊盘
+    X0, PITCH, PADY = 58.6, 2.54, 34.2
+    names = [("GND", "G", "#212121"), ("VCC", "V", "#E53935"), ("SIG", "S", "#1565C0")]
+    pins = {}
+    for i, (key, lab, wc) in enumerate(names):
+        x = X0 + i * PITCH
+        pad(s, x, PADY, r=0.92, hole_r=0.4)
+        s.text(x, 32.5, lab, size=0.95, fill=INK, rot=-90, anchor="middle", weight="700")
+        pins[key] = {"x": x, "y": PADY, "dir": "down", "label": lab, "full": key,
+                     "wire": wc}
+    # 连接器本体（白色，三插槽）
+    s.rect(56.8, 26.2, 8.6, 5.4, r=0.6, fill="#F4F2EC", stroke="#B9B4A6", sw=0.2)
+    for i in range(3):
+        s.rect(58.0 + i * PITCH, 27.6, 1.15, 2.7, r=0.25, fill="#6B665A")
+    # 两侧固定翼
+    s.rect(55.6, 27.4, 1.1, 3.0, r=0.3, fill="#E7E4DB", stroke="#B9B4A6", sw=0.16)
+    s.rect(65.5, 27.4, 1.1, 3.0, r=0.3, fill="#E7E4DB", stroke="#B9B4A6", sw=0.16)
+
+    # ---- 驱动电路：两颗 SOT-23（MOSFET / 肖特基）+ 0603 阻容
+    chip_soic(s, 64.3, 16.6, 1.8, 2.3, label=None, legs=3)
+    chip_soic(s, 67.9, 17.6, 1.8, 2.3, label=None, legs=3)
+    passive(s, 71.8, 17.2, 1.5, 0.8)
+    passive(s, 70.2, 15.4, 1.5, 0.8)
+    via(s, 62.5, 22.5, 0.42)
+    via(s, 74.5, 21.0, 0.42)
+    via(s, 68.5, 24.0, 0.42)
+
+    # ---- 丝印：水泵叶轮图标（板左缘）
+    icx, icy, icr = 57.9, 21.6, 1.75
+    s.circle(icx, icy, icr, fill="none", stroke=INK, sw=0.22)
+    s.circle(icx, icy, 0.35, fill=INK)
+    for a in (90, 210, 330):
+        ax = icx + icr * 0.72 * _m.cos(_m.radians(a))
+        ay = icy + icr * 0.72 * _m.sin(_m.radians(a))
+        s.line(icx + 0.5 * _m.cos(_m.radians(a)), icy + 0.5 * _m.sin(_m.radians(a)),
+               ax, ay, stroke=INK, sw=0.22)
+
+    # ---- 丝印：D 字 logo（板右下角）
+    s.rect(76.2, 31.4, 3.1, 3.1, r=0.25, fill="none", stroke=INK, sw=0.26)
+    s.text(77.75, 33.9, "D", size=2.1, fill=INK, weight="800")
+
+    # ---- 黑色热缩管应力释放（压在板顶走线槽上，最上层）
+    s.rect(60.4, 9.6, 6.2, 4.6, r=1.9, fill="#23262B", stroke="#0F1113", sw=0.2)
+    s.rect(61.6, 8.8, 3.8, 2.2, r=1.0, fill="#1A1D21", stroke="#0F1113", sw=0.18)
+
+    return _mk("pump_module_gvs", "微型潜水泵模块（G-V-S 驱动板）", W, H, s, pins,
+               {"note": "依据实拍照片：奶白圆柱泵体（端面中心出水 + 底部斜嘴）+ "
+                        "白色 PCB 驱动板，3 针 G-V-S（GND/VCC/SIG），MOSFET 低边驱动。"
+                        "泵 Ø20×31.5mm、板 30×24mm 为按照片比例估算。"})
+
+
+# ===========================================================================
 # 注册表
 #
 # 模块（传感器/执行器）用本文件里的手工渲染器，逐个按实物资料精修。
@@ -462,13 +631,15 @@ def render_mic_sound_blue() -> Part:
 # ===========================================================================
 REGISTRY = {
     "geekble_nano_esp32s3": render_geekble_nano,
-    "esp32s3_nano_white": render_esp32s3_nano_white,
+    "esp32s3_nano_blue": render_esp32s3_nano,
+    "esp32s3_nano_white": render_esp32s3_nano_white,   # 旧 id，别名
     "mpu6050_gy521": render_mpu6050,
     "as7341_module": render_as7341,
     "as7341_black6": render_as7341_black6,
     "pulse_sensor": render_pulse_sensor,
     "mic_lm2904_module": render_mic_lm2904,
     "mic_sound_blue": render_mic_sound_blue,
+    "pump_module_gvs": render_pump_module_gvs,
 }
 
 
